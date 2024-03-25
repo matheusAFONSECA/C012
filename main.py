@@ -66,8 +66,8 @@ def verify():     # thread que verifica as mensagens
                     messages = 0
                 elif messages > 0:
                     print(f"Você viu uma mensagem. Agora você possui {messages} mensagens restantes.")
-        
-        sleep(0.15)     # atraso do tempo de execução da thread
+
+            sleep(0.15)     # atraso do tempo de execução da thread
 
 
 def notification():     # thread que diz a quantidade de notificações
