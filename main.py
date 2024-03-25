@@ -1,76 +1,101 @@
 from threading import Thread, current_thread, Lock
 from time import sleep
 import keyboard
-from random import random
+import random
 
 
 # Variável global para controlar o estado de execução das threads
-executando = True
+running = True
 
-# notificações das ações da rede social
-mensagens = 0
+# notificações e posts da rede social
+messages = 0
+posts = 0
 
 # bloqueio 'Lock' para garantir que apenas uma thread modifique a variável por vez, evitando condições de corrida.
 lock = Lock()
 
 
 def post():     # thread que indica que foi feito um post
-    while executando:                   # Enquanto a variável 'executando' for True
+    global posts
+    while running:                   # Enquanto a variável 'executando' for True
 
         if keyboard.is_pressed('1'):    # caso a tecla 1 seja pressionada é feito um Post
-            print(f"{current_thread().name} fez um post")
-            sleep(0.5)        # Pequeno atraso para evitar múltiplos posts se a tecla ficar pressionada
+            print(f"Você fez um post")
+            posts += 1
+            sleep(5)        # Pequeno atraso para evitar múltiplos posts se a tecla ficar pressionada
 
+def like(nomes):     # thread que indica que 0foi feito um like
+    global messages        # var global de mensagens
 
-def like():     # thread que indica que foi feito um like
-    global mensagens        # var global de mensagens
+    while running:                   # Enquanto a variável 'executando' for True
+        chance = random.randint(1,10)
+        
+        if(posts > 0 and chance > 5):
+            pessoa = nomes[int(random.random() * len(nomes))]  # Seleciona aleatoriamente um nome da lista
+            print(f"{pessoa} deu like no seu post")
+            with lock:  # Adquire o bloqueio antes de modificar a variável compartilhada
+                messages += 1
 
-    while executando:                   # Enquanto a variável 'executando' for True
+        sleep(5)    # atraso do tempo de execução da thread
 
-        print(f"{current_thread().name} deu um like no post")
-        with lock:  # Adquire o bloqueio antes de modificar a variável compartilhada
-            mensagens += 1
+def message(nomes):     # thread que indica que recebeu uma mensagem
+    global messages        # var global de mensagens
 
-        sleep(3)    # atraso do tempo de execução da thread
+    while running:  # Enquanto a variável 'executando' for True
+        chance = random.randint(1,10)
+        if(chance > 7):
+            pessoa = nomes[int(random.random() * len(nomes))]  # Seleciona aleatoriamente um nome da lista
+            print(f"Você recebeu uma mensagem de {pessoa}")
+            with lock:  # Adquire o bloqueio antes de modificar a variável compartilhada
+                messages += 1
 
+        sleep(5)    # atraso do tempo de execução da thread
+        
+def verify():     # thread que verifica as mensagens
+    global messages        # var global de mensagens
 
-def message():     # thread que indica que recebeu uma mensagem
-    global mensagens        # var global de mensagens
+    while running:                   # Enquanto a variável 'executando' for True
 
-    while executando:  # Enquanto a variável 'executando' for True
-
-        print(f"{current_thread().name} mandou uma mensagem")
-        with lock:  # Adquire o bloqueio antes de modificar a variável compartilhada
-            mensagens += 1
-
-        sleep(3)    # atraso do tempo de execução da thread
-
+        if keyboard.is_pressed('2'):    # caso a tecla 2 seja pressionada
+            with lock:  # Adquire o bloqueio antes de acessar a variável compartilhada
+                messages -= 1
+                if(messages < 0):
+                    messages = 0
+                elif(messages > 0):
+                    print(f"Você viu uma mensagem. Agora você possui {messages} mensagens restantes.")
+        
+        sleep(0.15)     # atraso do tempo de execução da thread
 
 def notification():     # thread que diz a quantidade de notificações
-    while executando:                   # Enquanto a variável 'executando' for True
-        print(f"Você possui {mensagens} mensagens")
-        sleep(3)    # atraso do tempo de execução da thread
+    currentMessages = messages
+    while running:                   # Enquanto a variável 'executando' for True
+        if(currentMessages != messages): # se houver uma nova mensagem
+            print(f"Você possui {messages} mensagens")
+            sleep(5)    # atraso do tempo de execução da thread
 
 
 def main():         # função principal
     # definindo var global
-    global executando
+    global running
 
-    # Criação das threads
+    nomes = ["Paulo", "Matheus", "Roger", "Gabriel", "Davi", "João","Givanildo", "Marco", "Enzo", "Maria", "Aline", "Leticia"]  # Lista de nomes de pessoas
+   # Criação das threads
     t1 = Thread(target=post, name='Thread-Post')
-    t2 = Thread(target=like, name='Thread-Like')
-    t3 = Thread(target=message, name='Thread-Message')
+    t2 = Thread(target=like, args=(nomes,), name='Thread-Like')
+    t3 = Thread(target=message, args=(nomes,), name='Thread-Message')
     t4 = Thread(target=notification, name='Thread-Notification')
+    t5 = Thread(target=verify, name='Thread-Verify')
 
-    threads = [t1, t2, t3, t4]      # juntando as threads em uma lista
+    threads = [t1, t2, t3, t4,t5]      # juntando as threads em uma lista
 
     # Inicia as threads
     for thread in threads:
         thread.start()
 
-    while True:  # Loop infinito para verificar a entrada do teclado
+    while running:  # Loop infinito para verificar a entrada do teclado
         if keyboard.is_pressed('0'):  # Se a tecla '0' for pressionada
-            executando = False  # Altera o estado da variável 'executando' para False
+            running = False  # Altera o estado da variável 'executando' para False
+            print(f"Você esta viciado no Reels e ja passou da hora de fechar")
             break  # Sai do loop
 
     for thread in threads:
