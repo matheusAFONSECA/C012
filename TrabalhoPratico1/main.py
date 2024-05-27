@@ -1,4 +1,4 @@
-from threading import Thread, current_thread, Lock
+from threading import Thread, Lock
 from time import sleep
 import keyboard
 import random
