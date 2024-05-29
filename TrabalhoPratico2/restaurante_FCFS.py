@@ -7,13 +7,13 @@ from queue import Queue
 # Funções para processamento de pedidos
 def pedido_simples(cliente):
     print(f"Fazendo pedido SIMPLES para {cliente}")
-    sleep(2)
+    sleep(1)
     print(f"Pedido SIMPLES para {cliente} pronto")
 
 
 def pedido_medio(cliente):
     print(f"Fazendo pedido MÉDIO para {cliente}")
-    sleep(4)
+    sleep(3)
     print(f"Pedido MÉDIO para {cliente} pronto")
 
 
