@@ -3,21 +3,25 @@ from time import sleep, time
 from queue import PriorityQueue
 import random
 
+
 # Funções para processamento de pedidos
 def pedido_simples(cliente):
     print(f"Fazendo pedido SIMPLES para {cliente}")
-    sleep(1)
+    sleep(2)
     print(f"Pedido SIMPLES para {cliente} pronto")
+
 
 def pedido_medio(cliente):
     print(f"Fazendo pedido MÉDIO para {cliente}")
-    sleep(2)
+    sleep(4)
     print(f"Pedido MÉDIO para {cliente} pronto")
+
 
 def pedido_dificil(cliente):
     print(f"Fazendo pedido DIFÍCIL para {cliente}")
-    sleep(3)
+    sleep(6)
     print(f"Pedido DIFÍCIL para {cliente} pronto")
+
 
 # Função para adicionar pedidos à fila de prioridade
 def adicionar_pedido(cliente, tipo, tempo_processamento):
@@ -28,9 +32,11 @@ def adicionar_pedido(cliente, tipo, tempo_processamento):
     # Sair da seção crítica
     semaforo.release()
 
+
 # Inicializa a fila de prioridade e o semáforo
 pedidos = PriorityQueue()
 semaforo = Semaphore(1)
+
 
 def main():
     random.seed(8)
@@ -50,6 +56,7 @@ def main():
 
     # Espera a thread de processamento de pedidos terminar
     t.join()
+
 
 def processar_pedidos(inicio):
     while True:
@@ -72,8 +79,9 @@ def processar_pedidos(inicio):
             
             # Calcula o tempo total de processamento e imprime o resultado
             tempo_total = time() - inicio
-            print(f"Tempo total de processamento (SJF): {tempo_total:.2f} segundos")
+            print(f"Tempo total de processamento (SJF): {tempo_total:.3f} segundos")
             break
+
 
 if __name__ == "__main__":
     main()
