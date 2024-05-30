@@ -28,7 +28,7 @@ def adicionar_pedido(cliente, tipo, tempo_processamento):
     print(f"Adicionando pedido {tipo} para {cliente} com tempo de processamento {tempo_processamento}")
     # Entrar na seção crítica
     semaforo.acquire()
-    pedidos.put((tempo_processamento, cliente, tipo))
+    pedidos.put((tempo_processamento, cliente, tipo, time()))
     # Sair da seção crítica
     semaforo.release()
 
@@ -37,6 +37,8 @@ def adicionar_pedido(cliente, tipo, tempo_processamento):
 pedidos = PriorityQueue()
 semaforo = Semaphore(1)
 
+# Lista para armazenar tempos de espera
+tempos_espera = []
 
 def main():
     random.seed(8)
@@ -63,9 +65,13 @@ def processar_pedidos(inicio):
         # Entrar na seção crítica
         semaforo.acquire()
         if not pedidos.empty():
-            tempo_processamento, cliente, tipo = pedidos.get()
+            tempo_processamento, cliente, tipo, tempo_chegada = pedidos.get()
             # Sair da seção crítica
             semaforo.release()
+            
+            # Calcula o tempo de espera
+            tempo_espera = time() - tempo_chegada
+            tempos_espera.append(tempo_espera)
             
             if tipo == 'simples':
                 pedido_simples(cliente)
@@ -79,7 +85,9 @@ def processar_pedidos(inicio):
             
             # Calcula o tempo total de processamento e imprime o resultado
             tempo_total = time() - inicio
+            tempo_espera_medio = sum(tempos_espera) / len(tempos_espera) if tempos_espera else 0
             print(f"Tempo total de processamento (SJF): {tempo_total:.3f} segundos")
+            print(f"Tempo de espera médio: {tempo_espera_medio:.3f} segundos")
             break
 
 

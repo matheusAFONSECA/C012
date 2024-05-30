@@ -3,40 +3,37 @@ from threading import Thread, Semaphore
 from time import sleep, time
 from queue import PriorityQueue
 
-
 # Funções para processamento de pedidos
 def pedido_simples(cliente):
     print(f"Fazendo pedido SIMPLES para {cliente}")
     sleep(1)
     print(f"Pedido SIMPLES para {cliente} pronto")
 
-
 def pedido_medio(cliente):
     print(f"Fazendo pedido MÉDIO para {cliente}")
     sleep(3)
     print(f"Pedido MÉDIO para {cliente} pronto")
-
 
 def pedido_dificil(cliente):
     print(f"Fazendo pedido DIFÍCIL para {cliente}")
     sleep(6)
     print(f"Pedido DIFÍCIL para {cliente} pronto")
 
-
 # Função para adicionar pedidos à fila de prioridade
 def adicionar_pedido(cliente, tipo, prioridade):
     print(f"Adicionando pedido {tipo} para {cliente} com prioridade {prioridade}")
     # Entrar na seção crítica
     semaforo.acquire()
-    pedidos.put((prioridade, cliente, tipo))
+    pedidos.put((prioridade, cliente, tipo, time()))
     # Sair da seção crítica
     semaforo.release()
-
 
 # Inicializa a fila de prioridade e o semáforo
 pedidos = PriorityQueue()
 semaforo = Semaphore(1)
 
+# Lista para armazenar tempos de espera
+tempos_espera = []
 
 def main():
     random.seed(8)
@@ -57,15 +54,18 @@ def main():
     # Espera a thread de processamento de pedidos terminar
     t.join()
 
-
 def processar_pedidos(inicio):
     while True:
         # Entrar na seção crítica
         semaforo.acquire()
         if not pedidos.empty():
-            prioridade, cliente, tipo = pedidos.get()
+            prioridade, cliente, tipo, tempo_chegada = pedidos.get()
             # Sair da seção crítica
             semaforo.release()
+            
+            # Calcula o tempo de espera
+            tempo_espera = time() - tempo_chegada
+            tempos_espera.append(tempo_espera)
             
             if tipo == 'simples':
                 pedido_simples(cliente)
@@ -79,9 +79,10 @@ def processar_pedidos(inicio):
             
             # Calcula o tempo total de processamento e imprime o resultado
             tempo_total = time() - inicio
+            tempo_espera_medio = sum(tempos_espera) / len(tempos_espera) if tempos_espera else 0
             print(f"Tempo total de processamento (PS): {tempo_total:.3f} segundos")
+            print(f"Tempo de espera médio: {tempo_espera_medio:.3f} segundos")
             break
-
 
 if __name__ == "__main__":
     main()
